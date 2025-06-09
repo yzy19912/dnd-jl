@@ -125,16 +125,19 @@ function start_lab() {
   nohup jupyter lab --ip=0.0.0.0 --port=$PORT --no-browser --allow-root > "$JUPYTER_LOG" 2>&1 &
   echo -e "🚀 \e[1;32mJupyterLab 已后台启动，日志在 $JUPYTER_LOG\e[0m"
   print_separator
+  service_status
 }
 
-function start_lab_interactive() {
-  print_separator
-  stop_lab
-  open_ufw_port
-  source "$VENV_DIR/bin/activate"
-  echo -e "👀 \e[1;34m正在交互模式启动 JupyterLab ...\e[0m"
-  jupyter lab --ip=0.0.0.0 --port=$PORT --no-browser --allow-root 2>&1 | tee "$JUPYTER_LOG"
-  print_separator
+function stop_lab() {
+  local pids
+  pids=$(ps aux | grep '[j]upyter-lab' | awk '{print $2}')
+  if [[ -n "$pids" ]]; then
+    kill $pids
+    echo -e "⏹️  \e[1;34mJupyterLab 已停止。\e[0m"
+  else
+    echo -e "⚠️  \e[1;33m未检测到 JupyterLab 进程。\e[0m"
+  fi
+  service_status
 }
 
 function stop_lab() {
