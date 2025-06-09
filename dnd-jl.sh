@@ -20,6 +20,7 @@ VENV_DIR="$INSTALL_DIR/venv"
 PORT=8888
 JUPYTER_LOG="$INSTALL_DIR/jupyterlab.log"
 CACHE_IP_FILE="$INSTALL_DIR/.public_ip"
+CONFIG_FILE="$HOME/.jupyter/jupyter_lab_config.py"
 
 function get_cached_ip() {
   if [[ -f "$CACHE_IP_FILE" ]]; then
@@ -44,6 +45,12 @@ function open_ufw_port() {
   fi
 }
 
+function reset_jupyter_config() {
+  # 强制覆盖 config 文件
+  rm -f "$CONFIG_FILE"
+  jupyter lab --generate-config
+}
+
 function setup_jupyter_password() {
   source "$VENV_DIR/bin/activate"
   echo -e "\e[1;35m\n>>> 设置/修改 JupyterLab 密码\e[0m"
@@ -54,6 +61,8 @@ function setup_jupyter_password() {
 }
 
 function install_all() {
+  # 先清理IP缓存
+  rm -f "$CACHE_IP_FILE"
   echo -e "\e[1;34m[+] 安装依赖并配置 JupyterLab...\e[0m"
   while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
     echo "检测到有其他 apt/dpkg 进程正在运行，等待中..."
@@ -67,8 +76,8 @@ function install_all() {
   pip install jupyterlab jupyter-server jupyterlab-lsp
   ln -sf "$(realpath "$0")" /usr/local/bin/dnd-jl && chmod +x /usr/local/bin/dnd-jl
   open_ufw_port
-  echo -e "\e[1;34m[+] 正在生成 JupyterLab 配置文件...\e[0m"
-  jupyter lab --generate-config
+  echo -e "\e[1;34m[+] 重置 JupyterLab 配置文件...\e[0m"
+  reset_jupyter_config
   setup_jupyter_password
   echo -e "\n\e[1;32mJupyterLab 安装与配置已完成，可通过 dnd-jl 启动菜单。\e[0m"
 }
@@ -112,7 +121,7 @@ function show_menu() {
     echo -e "\e[1;35m┌───────────────────────────────────────┐\e[0m"
     echo -e "\e[1;35m│            DaNaoDai 菜单              │\e[0m"
     echo -e "\e[1;35m└───────────────────────────────────────┘\e[0m"
-    echo -e "\e[1;36m[1]\e[0m 安装 JupyterLab"
+    echo -e "\e[1;36m[1]\e[0m 安装（重置）"
     echo -e "\e[1;36m[2]\e[0m 启动 JupyterLab"
     echo -e "\e[1;36m[3]\e[0m 停止 JupyterLab"
     echo -e "\e[1;36m[4]\e[0m 状态查询"
