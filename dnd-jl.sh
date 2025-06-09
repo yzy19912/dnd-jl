@@ -136,7 +136,6 @@ function stop_lab() {
   else
     echo -e "⚠️  \e[1;33m未检测到 JupyterLab 进程。\e[0m"
   fi
-  service_status
 }
 
 function stop_lab() {
@@ -149,7 +148,6 @@ function stop_lab() {
   else
     echo -e "⚠️  \e[1;33m未检测到 JupyterLab 进程。\e[0m"
   fi
-  service_status
 }
 
 function enter_venv() {
