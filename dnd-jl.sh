@@ -131,8 +131,16 @@ function start_lab_interactive() {
 }
 
 function stop_lab() {
-  pkill -f jupyter-lab
-  echo -e "⏹️  \e[1;34mJupyterLab 已停止（如有）\e[0m"
+  # 停止所有 jupyter lab 相关进程（更安全更全）
+  local pids
+  pids=$(ps aux | grep '[j]upyter-lab' | awk '{print $2}')
+  if [[ -n "$pids" ]]; then
+    kill $pids
+    echo -e "⏹️  \e[1;34mJupyterLab 已停止。\e[0m"
+  else
+    echo -e "⚠️  \e[1;33m未检测到 JupyterLab 进程。\e[0m"
+  fi
+  service_status
 }
 
 function enter_venv() {
