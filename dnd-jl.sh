@@ -124,6 +124,14 @@ function start_lab() {
   source "$VENV_DIR/bin/activate"
   nohup jupyter lab --ip=0.0.0.0 --port=$PORT --no-browser --allow-root > "$JUPYTER_LOG" 2>&1 &
   echo -e "🚀 \e[1;32mJupyterLab 已后台启动，日志在 $JUPYTER_LOG\e[0m"
+  print_separator
+  # 等待进程真正启动（最多5秒）
+  for i in {1..5}; do
+    sleep 1
+    if pgrep -af jupyter-lab > /dev/null; then
+      break
+    fi
+  done
   service_status
 }
 
