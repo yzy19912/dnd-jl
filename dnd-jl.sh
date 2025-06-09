@@ -143,13 +143,26 @@ function enter_venv() {
 }
 
 function show_menu() {
-  local first_run=1
   while true; do
-    if [ "$first_run" = "1" ]; then
-      clear
-      first_run=0
-    fi
-    # ... 菜单内容 ...
+    echo -e "\e[1;31m██████╗  █████╗ ███╗   ██╗ █████╗  ██████╗  █████╗ ██████╗ \e[0m"
+    echo -e "\e[1;33m██╔══██╗██╔══██╗████╗  ██║██╔══██╗██╔════╝ ██╔══██╗██╔══██╗\e[0m"
+    echo -e "\e[1;32m██████╔╝███████║██╔██╗ ██║███████║██║  ███╗███████║██████╔╝\e[0m"
+    echo -e "\e[1;36m██╔═══╝ ██╔══██║██║╚██╗██║██╔══██║██║   ██║██╔══██║██╔══██╗\e[0m"
+    echo -e "\e[1;35m██║     ██║  ██║██║ ╚████║██║  ██║╚██████╔╝██║  ██║██║  ██║\e[0m"
+    echo -e "\e[1;34m╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝\e[0m"
+    echo -e "\e[1;35m┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\e[0m"
+    echo -e "\e[1;35m┃              DaNaoDai 菜单                  ┃\e[0m"
+    echo -e "\e[1;35m┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\e[0m"
+    echo -e "\e[1;36m┃ [1] 安装（重置）                            ┃\e[0m"
+    echo -e "\e[1;36m┃ [2] 启动 JupyterLab                         ┃\e[0m"
+    echo -e "\e[1;36m┃ [3] 停止 JupyterLab                         ┃\e[0m"
+    echo -e "\e[1;36m┃ [4] 状态查询                                ┃\e[0m"
+    echo -e "\e[1;36m┃ [5] 交互启动                                ┃\e[0m"
+    echo -e "\e[1;36m┃ [6] 进入 venv 环境                          ┃\e[0m"
+    echo -e "\e[1;36m┃ [7] 修改 JupyterLab 密码                    ┃\e[0m"
+    echo -e "\e[1;36m┃ [8] 退出                                    ┃\e[0m"
+    echo -e "\e[1;35m┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\e[0m"
+    echo -e ""
     read -p "请选择操作: " choice
     print_separator
     case $choice in
@@ -163,6 +176,7 @@ function show_menu() {
       8) print_separator; echo -e "👋 再见！"; exit;;
       *) print_separator; echo -e "❌ 无效选项，请重新选择。"; print_separator;;
     esac
+    echo -e ""
     read -p "按回车键返回菜单..." dummy
   done
 }
