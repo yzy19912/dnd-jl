@@ -183,8 +183,6 @@ function show_menu() {
       8) print_separator; echo -e "👋 再见！"; exit;;
       *) print_separator; echo -e "❌ 无效选项，请重新选择。"; print_separator;;
     esac
-    echo -e ""
-    read -p "按回车键返回菜单..." dummy
   done
 }
 # 检测是否是交互终端，防止 wget|bash 等方式死循环
