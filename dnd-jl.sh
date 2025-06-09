@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# 🌈🐱 Welcome Banner (修正彩色打印，不再输出 e[xxm）
+# 🌈🐱 彩色 Banner 美化（字体自绘 DaNaoDai，边框全对齐）
 echo -e "\e[1;35m"
 cat << EOF
-┌─────────────────────────────────────────────┐
-│  $(echo -e "\e[1;36m  ____        _                _       _     \e[1;35m")│
-│  $(echo -e "\e[1;36m |  _ \\  __ _| |_ ___  ___  __| | __ _| |__  \e[1;35m")│
-│  $(echo -e "\e[1;36m | | | |/ _\` | __/ _ \\/ _ \\/ _\` |/ _\` | '_ \\ \e[1;35m")│
-│  $(echo -e "\e[1;36m | |_| | (_| | ||  __/  __/ (_| | (_| | | | | \e[1;35m")│
-│  $(echo -e "\e[1;36m |____/ \\__,_|\\__\\___|\\___|\\__,_|\\__,_|_| |_| \e[1;35m")│
-│      $(echo -e "\e[1;33mDaNaoDai 🐾  JupyterLab 自动安装器    \e[1;35m")│
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│  $(echo -e "\e[1;36m ____        _   _               ____        _     _    \e[1;35m") │
+│  $(echo -e "\e[1;36m|  _ \  __ _| |_| |__   ___ _ __|  _ \  __ _| |__ | |   \e[1;35m") │
+│  $(echo -e "\e[1;36m| | | |/ _\` | __| '_ \ / _ \ '__| | | |/ _\` | '_ \| |   \e[1;35m") │
+│  $(echo -e "\e[1;36m| |_| | (_| | |_| | | |  __/ |  | |_| | (_| | | | | |   \e[1;35m") │
+│  $(echo -e "\e[1;36m|____/ \__,_|\__|_| |_|\___|_|  |____/ \__,_|_| |_|_|   \e[1;35m") │
+│        $(echo -e "\e[1;33mDaNaoDai 🐾  JupyterLab 自动安装器     \e[1;35m")       │
+└──────────────────────────────────────────────┘
 EOF
 echo -e "\e[0m"
 
@@ -32,25 +32,25 @@ function get_cached_ip() {
 }
 
 function open_ufw_port() {
-  # 检查 ufw 是否安装
   if command -v ufw >/dev/null 2>&1; then
-    # 检查是否启用
     ufw status | grep -qw active
     if [ $? -eq 0 ]; then
-      # 检查端口是否已经放行
       ufw status | grep -q "$PORT"
       if [ $? -ne 0 ]; then
         echo -e "\e[1;34m[+] 检测到 ufw 已启用，自动放行端口 $PORT ...\e[0m"
         sudo ufw allow $PORT
-      else
-        echo -e "\e[1;32m端口 $PORT 已在 ufw 放行，无需重复操作。\e[0m"
       fi
-    else
-      echo -e "\e[1;33mufw 未启用，无需放行端口。\e[0m"
     fi
-  else
-    echo -e "\e[1;33m未检测到 ufw，无防火墙放行操作。\e[0m"
   fi
+}
+
+function setup_jupyter_password() {
+  source "$VENV_DIR/bin/activate"
+  echo -e "\e[1;35m\n>>> 设置/修改 JupyterLab 密码\e[0m"
+  jupyter lab password
+  echo -e "\e[1;32m密码设置完成，正在重启 JupyterLab 服务...\e[0m"
+  stop_lab
+  start_lab
 }
 
 function install_all() {
@@ -65,37 +65,25 @@ function install_all() {
   source "$VENV_DIR/bin/activate"
   pip install --upgrade pip
   pip install jupyterlab jupyter-server jupyterlab-lsp
-  # 自动添加到 /usr/local/bin/dnd-jl
   ln -sf "$(realpath "$0")" /usr/local/bin/dnd-jl && chmod +x /usr/local/bin/dnd-jl
-  # 自动放行端口
   open_ufw_port
-  echo -e "\n\e[1;32mJupyterLab 安装完成，可通过 dnd-jl 菜单启动。\e[0m"
+  echo -e "\e[1;34m[+] 正在生成 JupyterLab 配置文件...\e[0m"
+  jupyter lab --generate-config
+  setup_jupyter_password
+  echo -e "\n\e[1;32mJupyterLab 安装与配置已完成，可通过 dnd-jl 启动菜单。\e[0m"
 }
 
 function service_status() {
-  echo -e "\e[1;36m──── 服务状态 ────\e[0m"
   if pgrep -af jupyter-lab > /dev/null; then
-    echo -e "\e[1;32m正在运行\e[0m"
-    # 状态查询时补充 IP:端口、token（公网 IP 只 curl 一次）
+    echo -e "\e[1;32mJupyterLab 服务状态：运行中\e[0m"
     PUBLIC_IP=$(get_cached_ip)
-    source "$VENV_DIR/bin/activate"
-    SERVER_LIST=$(jupyter server list 2>/dev/null)
-    JLAB_URL=$(echo "$SERVER_LIST" | grep -oP 'http://\S+')
-    TOKEN=$(echo "$JLAB_URL" | grep -oP 'token=\K[0-9a-f]+')
-    if [[ -n "$JLAB_URL" && -n "$TOKEN" ]]; then
-      ACCESS_URL="http://$PUBLIC_IP:$PORT/?token=$TOKEN"
-      echo -e "公网访问地址: \e[1;33m$ACCESS_URL\e[0m"
-    else
-      echo -e "\e[1;31m未检测到 token 或 URL，可能未启动或日志丢失。\e[0m"
-    fi
-    echo -e "JupyterLab 日志: $JUPYTER_LOG"
+    echo -e "公网访问地址: \e[1;33mhttp://$PUBLIC_IP:$PORT/\e[0m"
   else
-    echo -e "\e[1;31m未运行\e[0m"
+    echo -e "\e[1;31mJupyterLab 服务状态：未运行\e[0m"
   fi
 }
 
 function start_lab() {
-  echo -e "\e[1;34m[+] 启动 JupyterLab...\e[0m"
   stop_lab
   open_ufw_port
   source "$VENV_DIR/bin/activate"
@@ -104,7 +92,6 @@ function start_lab() {
 }
 
 function start_lab_interactive() {
-  echo -e "\e[1;34m[+] 使用交互模式启动 JupyterLab（打印日志）...\e[0m"
   stop_lab
   open_ufw_port
   source "$VENV_DIR/bin/activate"
@@ -112,7 +99,6 @@ function start_lab_interactive() {
 }
 
 function stop_lab() {
-  echo -e "\e[1;34m[+] 停止 JupyterLab...\e[0m"
   pkill -f jupyter-lab
 }
 
@@ -123,16 +109,17 @@ function enter_venv() {
 
 function show_menu() {
   while true; do
-    echo -e "\e[1;35m┌──────────────────────────────┐\e[0m"
-    echo -e "\e[1;35m│        DaNaoDai 菜单         │\e[0m"
-    echo -e "\e[1;35m└──────────────────────────────┘\e[0m"
+    echo -e "\e[1;35m┌───────────────────────────────────────┐\e[0m"
+    echo -e "\e[1;35m│            DaNaoDai 菜单              │\e[0m"
+    echo -e "\e[1;35m└───────────────────────────────────────┘\e[0m"
     echo -e "\e[1;36m[1]\e[0m 安装 JupyterLab"
     echo -e "\e[1;36m[2]\e[0m 启动 JupyterLab"
     echo -e "\e[1;36m[3]\e[0m 停止 JupyterLab"
     echo -e "\e[1;36m[4]\e[0m 状态查询"
     echo -e "\e[1;36m[5]\e[0m 交互启动"
     echo -e "\e[1;36m[6]\e[0m 进入 venv 环境"
-    echo -e "\e[1;36m[7]\e[0m 退出"
+    echo -e "\e[1;36m[7]\e[0m 修改 JupyterLab 密码"
+    echo -e "\e[1;36m[8]\e[0m 退出"
     read -p "请选择操作: " choice
     case $choice in
       1) install_all;;
@@ -141,10 +128,17 @@ function show_menu() {
       4) service_status;;
       5) start_lab_interactive;;
       6) enter_venv;;
-      7) exit;;
+      7) setup_jupyter_password;;
+      8) exit;;
       *) echo "无效选项，请重新选择。";;
     esac
   done
 }
+
+# 检测是否是交互终端，防止 wget|bash 等方式死循环
+if [ ! -t 0 ]; then
+  echo "❌ 本脚本需要在交互式终端（如 bash dnd-jl.sh）运行，不支持管道或非交互执行。"
+  exit 1
+fi
 
 show_menu
