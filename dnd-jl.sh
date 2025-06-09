@@ -86,7 +86,15 @@ function install_all() {
   source "$VENV_DIR/bin/activate"
   pip install --upgrade pip
   pip install jupyterlab jupyter-server jupyterlab-lsp
-  ln -sf "$(realpath "$0")" /usr/local/bin/dnd-jl && chmod +x /usr/local/bin/dnd-jl
+
+  # === 关键部分，创建可执行软链 ===
+  # 先确保当前脚本有执行权限
+  chmod +x "$(realpath "$0")"
+  # 用 sudo 创建软链并赋予执行权限（如无则直接覆盖）
+  sudo ln -sf "$(realpath "$0")" /usr/local/bin/dnd-jl
+  sudo chmod +x /usr/local/bin/dnd-jl
+  echo -e "🔗 \e[1;32m已创建/更新快捷命令：sudo dnd-jl\e[0m"
+
   open_ufw_port
   echo -e "📝 \e[1;34m重置 JupyterLab 配置文件...\e[0m"
   reset_jupyter_config
