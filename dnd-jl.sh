@@ -158,6 +158,16 @@ function stop_lab() {
   fi
 }
 
+function start_lab_interactive() {
+  print_separator
+  stop_lab
+  open_ufw_port
+  source "$VENV_DIR/bin/activate"
+  echo -e "👀 \e[1;34m正在交互模式启动 JupyterLab ...\e[0m"
+  jupyter lab --ip=0.0.0.0 --port=$PORT --no-browser --allow-root 2>&1 | tee "$JUPYTER_LOG"
+  print_separator
+}
+
 function enter_venv() {
   print_separator
   echo -e "🧪 \e[1;34m进入 Jupyter venv 环境，输入 \e[1;33mexit\e[0m \e[1;34m可退出。\e[0m"
