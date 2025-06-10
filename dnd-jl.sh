@@ -74,6 +74,7 @@ function setup_jupyter_password() {
 
 function install_all() {
   rm -f "$CACHE_IP_FILE"
+  stop_lab
   print_separator
   echo -e "🛠️  \e[1;34m正在安装并重置 JupyterLab ...\e[0m"
   while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
