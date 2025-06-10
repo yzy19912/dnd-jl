@@ -85,7 +85,7 @@ function install_all() {
   python3 -m venv "$VENV_DIR"
   source "$VENV_DIR/bin/activate"
   pip install --upgrade pip
-  pip install jupyterlab jupyter-server jupyterlab-lsp
+  pip install jupyterlab jupyter-server jupyterlab-lsp jupyterlab-simpledark
 
   # === 关键部分，创建可执行软链 ===
   # 先确保当前脚本有执行权限
